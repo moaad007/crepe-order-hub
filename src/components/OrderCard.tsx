@@ -29,14 +29,14 @@ export function OrderCard({ order, onStatusUpdate }: OrderCardProps) {
     onStatusUpdate(order.id, newStatus);
     toast({
       title: "Order Updated",
-      description: `Order #${order.id} status changed to ${newStatus}`,
+      description: `Order #${order.orderNumber} status changed to ${newStatus}`,
     });
   };
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-bold">Order #{order.id}</CardTitle>
+        <CardTitle className="text-xl font-bold">Order #{order.orderNumber}</CardTitle>
         <Badge className={statusColors[order.status]}>
           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
         </Badge>
