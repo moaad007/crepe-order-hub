@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
+import { Printer } from "lucide-react";
 
 interface OrderCardProps {
   order: Order;
   onStatusUpdate: (orderId: string, newStatus: Order["status"]) => void;
+  onPrint: () => void;
 }
 
 const statusColors = {
@@ -23,7 +25,7 @@ const nextStatus: Record<Order["status"], Order["status"]> = {
   completed: "completed",
 };
 
-export function OrderCard({ order, onStatusUpdate }: OrderCardProps) {
+export function OrderCard({ order, onStatusUpdate, onPrint }: OrderCardProps) {
   const handleStatusUpdate = () => {
     const newStatus = nextStatus[order.status];
     onStatusUpdate(order.id, newStatus);
@@ -37,21 +39,30 @@ export function OrderCard({ order, onStatusUpdate }: OrderCardProps) {
     <Card className="w-full max-w-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold">Order #{order.orderNumber}</CardTitle>
-        <Badge className={statusColors[order.status]}>
-          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onPrint}
+            title="Print ticket"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+          <Badge className={statusColors[order.status]}>
+            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div>
-            <p className="font-semibold">Customer: {order.customerName}</p>
             <p className="text-sm text-muted-foreground">
               {new Date(order.createdAt).toLocaleString()}
             </p>
           </div>
           <div className="space-y-2">
-            {order.items.map((item) => (
-              <div key={item.id} className="flex justify-between">
+            {order.items.map((item, index) => (
+              <div key={index} className="flex justify-between">
                 <span>{item.name}</span>
                 <span>${item.price.toFixed(2)}</span>
               </div>

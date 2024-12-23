@@ -9,5 +9,5 @@ export type Order = {
   status: OrderStatus;
   totalAmount: number;
   createdAt: Date;
-  customerName: string;
+  customerName?: string;
 };

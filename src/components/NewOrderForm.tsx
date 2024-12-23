@@ -1,20 +1,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { menuItems, CrepeItem } from "../data/menu";
 import { toast } from "./ui/use-toast";
 
 interface NewOrderFormProps {
   onSubmit: (order: {
-    customerName: string;
     items: CrepeItem[];
     totalAmount: number;
   }) => void;
 }
 
 export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
-  const [customerName, setCustomerName] = useState("");
   const [selectedItems, setSelectedItems] = useState<CrepeItem[]>([]);
 
   const handleAddItem = (item: CrepeItem) => {
@@ -27,14 +24,6 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName) {
-      toast({
-        title: "Error",
-        description: "Please enter customer name",
-        variant: "destructive",
-      });
-      return;
-    }
     if (selectedItems.length === 0) {
       toast({
         title: "Error",
@@ -44,8 +33,7 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
       return;
     }
     const totalAmount = selectedItems.reduce((sum, item) => sum + item.price, 0);
-    onSubmit({ customerName, items: selectedItems, totalAmount });
-    setCustomerName("");
+    onSubmit({ items: selectedItems, totalAmount });
     setSelectedItems([]);
     toast({
       title: "Success",
@@ -60,14 +48,6 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Input
-              placeholder="Customer Name"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full"
-            />
-          </div>
           <div className="space-y-2">
             <h3 className="font-semibold">Menu Items</h3>
             <div className="grid grid-cols-2 gap-2">

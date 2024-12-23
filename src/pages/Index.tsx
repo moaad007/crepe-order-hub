@@ -9,8 +9,7 @@ const Index = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [lastOrderNumber, setLastOrderNumber] = useState(0);
 
-  const handleNewOrder = ({ customerName, items, totalAmount }: {
-    customerName: string;
+  const handleNewOrder = ({ items, totalAmount }: {
     items: CrepeItem[];
     totalAmount: number;
   }) => {
@@ -22,7 +21,6 @@ const Index = () => {
       status: "pending",
       totalAmount,
       createdAt: new Date(),
-      customerName,
     };
     setOrders([newOrder, ...orders]);
     setLastOrderNumber(newOrderNumber);
@@ -32,7 +30,6 @@ const Index = () => {
   const printOrderTicket = (order: Order) => {
     const ticketContent = `
       Order #${order.orderNumber}
-      Customer: ${order.customerName}
       ${new Date(order.createdAt).toLocaleTimeString()}
       
       Items:
@@ -102,6 +99,7 @@ const Index = () => {
                 key={order.id}
                 order={order}
                 onStatusUpdate={handleStatusUpdate}
+                onPrint={() => printOrderTicket(order)}
               />
             ))}
           </div>
