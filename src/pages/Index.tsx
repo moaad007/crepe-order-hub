@@ -28,15 +28,34 @@ const Index = () => {
   };
 
   const printOrderTicket = (order: Order) => {
+    // Create a separator line
+    const separator = "-".repeat(32);
+    
+    // Format the time to show only hours and minutes
+    const time = new Date(order.createdAt).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+
+    // Create the ticket content with proper spacing and formatting
     const ticketContent = `
-      Order #${order.orderNumber}
-      ${new Date(order.createdAt).toLocaleTimeString()}
-      
-      Items:
-      ${order.items.map(item => `- ${item.name}`).join('\n')}
-      
-      Total: $${order.totalAmount.toFixed(2)}
-    `;
+╔══════════════════════════════╗
+║         CREPE SHOP           ║
+╚══════════════════════════════╝
+
+ORDER #${order.orderNumber.toString().padStart(3, '0')}
+${time}
+
+${separator}
+ITEMS:
+${order.items.map(item => `• ${item.name.padEnd(20, ' ')} $${item.price.toFixed(2)}`).join('\n')}
+${separator}
+
+TOTAL:${' '.repeat(14)}$${order.totalAmount.toFixed(2)}
+
+Thank you!
+
+`;
 
     // Create a hidden iframe for printing
     const printFrame = document.createElement('iframe');
@@ -47,9 +66,22 @@ const Index = () => {
       <html>
         <head>
           <style>
-            body { font-family: monospace; font-size: 14px; line-height: 1.5; }
-            h1 { font-size: 16px; margin-bottom: 8px; }
-            .ticket { padding: 20px; }
+            @page {
+              margin: 0;
+              size: 80mm auto;  /* Standard thermal paper width */
+            }
+            body {
+              margin: 0;
+              padding: 8px;
+              font-family: 'Courier New', monospace;
+              font-size: 12px;
+              line-height: 1.2;
+              white-space: pre;
+              width: 80mm;
+            }
+            .ticket {
+              width: 100%;
+            }
           </style>
         </head>
         <body>
