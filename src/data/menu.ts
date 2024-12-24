@@ -8,7 +8,6 @@ export type CrepeItem = {
 
 export let menuItems: CrepeItem[] = [];
 
-// Add a function to update the menu items
 export const updateMenuItems = (newItems: CrepeItem[]) => {
-  menuItems = newItems;
+  menuItems = [...newItems];
 };

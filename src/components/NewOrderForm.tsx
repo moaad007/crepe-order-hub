@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { menuItems, CrepeItem } from "../data/menu";
 import { toast } from "./ui/use-toast";
+import { MenuItem } from "./MenuItem";
+import { SelectedItems } from "./SelectedItems";
 
 interface NewOrderFormProps {
   onSubmit: (order: {
@@ -52,50 +54,20 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
             <h3 className="font-semibold">Menu Items</h3>
             <div className="grid grid-cols-2 gap-2">
               {menuItems.map((item) => (
-                <Button
+                <MenuItem
                   key={item.id}
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleAddItem(item)}
-                  className="h-auto py-2 px-3 text-left flex flex-col items-start"
-                >
-                  <span className="font-semibold">{item.name}</span>
-                  <span className="text-sm text-muted-foreground">
-                    ${item.price.toFixed(2)}
-                  </span>
-                </Button>
+                  item={item}
+                  onAddItem={handleAddItem}
+                />
               ))}
             </div>
           </div>
-          {selectedItems.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="font-semibold">Selected Items</h3>
-              <div className="space-y-1">
-                {selectedItems.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span>{item.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span>${item.price.toFixed(2)}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveItem(index)}
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t pt-2 flex justify-between font-bold">
-                <span>Total</span>
-                <span>
-                  ${selectedItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
-                </span>
-              </div>
-            </div>
-          )}
+          
+          <SelectedItems
+            items={selectedItems}
+            onRemoveItem={handleRemoveItem}
+          />
+
           <Button type="submit" className="w-full">
             Create Order
           </Button>
