@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { menuItems, CrepeItem } from "../data/menu";
+import { menuItems, CrepeItem, updateMenuItems } from "../data/menu";
 import { toast } from "./ui/use-toast";
 
 export function ProductManager() {
@@ -31,7 +31,9 @@ export function ProductManager() {
       category: newProduct.category,
     };
 
-    setProducts([...products, product]);
+    const updatedProducts = [...products, product];
+    setProducts(updatedProducts);
+    updateMenuItems(updatedProducts); // Update the shared menu items
     setNewProduct({ name: "", price: "", category: "savory" });
     toast({
       title: "Success",
@@ -46,11 +48,11 @@ export function ProductManager() {
   const handleUpdateProduct = () => {
     if (!editingProduct) return;
 
-    setProducts(
-      products.map((p) =>
-        p.id === editingProduct.id ? editingProduct : p
-      )
+    const updatedProducts = products.map((p) =>
+      p.id === editingProduct.id ? editingProduct : p
     );
+    setProducts(updatedProducts);
+    updateMenuItems(updatedProducts); // Update the shared menu items
     setEditingProduct(null);
     toast({
       title: "Success",
@@ -59,7 +61,9 @@ export function ProductManager() {
   };
 
   const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id));
+    const updatedProducts = products.filter((p) => p.id !== id);
+    setProducts(updatedProducts);
+    updateMenuItems(updatedProducts); // Update the shared menu items
     toast({
       title: "Success",
       description: "Product deleted successfully",
