@@ -6,32 +6,32 @@ export type CrepeItem = {
   category: 'sweet' | 'savory';
 };
 
-export const menuItems: CrepeItem[] = [
+export let menuItems: CrepeItem[] = [
   {
     id: "1",
-    name: "Nutella & Banana",
-    description: "Classic combination of chocolate hazelnut spread and fresh bananas",
+    name: "Classic Driwich",
+    description: "Our signature sandwich",
     price: 8.99,
-    category: "sweet"
+    category: "savory"
   },
   {
     id: "2",
-    name: "Ham & Cheese",
-    description: "Traditional savory crepe with ham and melted cheese",
+    name: "Cheese Driwich",
+    description: "Melted cheese sandwich",
     price: 9.99,
     category: "savory"
   },
   {
     id: "3",
-    name: "Lemon & Sugar",
-    description: "Simple and classic with fresh lemon and powdered sugar",
+    name: "Sweet Driwich",
+    description: "Sweet and delicious",
     price: 7.99,
     category: "sweet"
   },
   {
     id: "4",
-    name: "Spinach & Feta",
-    description: "Mediterranean style with fresh spinach and feta cheese",
+    name: "Special Driwich",
+    description: "Our special recipe",
     price: 10.99,
     category: "savory"
   }

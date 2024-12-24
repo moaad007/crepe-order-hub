@@ -4,6 +4,9 @@ import { OrderCard } from "../components/OrderCard";
 import { Order } from "../types/order";
 import { CrepeItem } from "../data/menu";
 import { toast } from "../components/ui/use-toast";
+import { Button } from "../components/ui/button";
+import { ProductManager } from "../components/ProductManager";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../components/ui/sheet";
 
 const Index = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -28,19 +31,16 @@ const Index = () => {
   };
 
   const printOrderTicket = (order: Order) => {
-    // Create a separator line
     const separator = "-".repeat(32);
     
-    // Format the time to show only hours and minutes
     const time = new Date(order.createdAt).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
 
-    // Create the ticket content with proper spacing and formatting
     const ticketContent = `
 ╔══════════════════════════════╗
-║         CREPE SHOP           ║
+║         DRIWICH              ║
 ╚══════════════════════════════╝
 
 ORDER #${order.orderNumber.toString().padStart(3, '0')}
@@ -57,7 +57,6 @@ Thank you!
 
 `;
 
-    // Create a hidden iframe for printing
     const printFrame = document.createElement('iframe');
     printFrame.style.display = 'none';
     document.body.appendChild(printFrame);
@@ -68,7 +67,7 @@ Thank you!
           <style>
             @page {
               margin: 0;
-              size: 80mm auto;  /* Standard thermal paper width */
+              size: 80mm auto;
             }
             body {
               margin: 0;
@@ -96,7 +95,6 @@ Thank you!
     printFrame.contentWindow?.focus();
     printFrame.contentWindow?.print();
     
-    // Remove the iframe after printing
     setTimeout(() => {
       document.body.removeChild(printFrame);
     }, 1000);
@@ -117,7 +115,20 @@ Thank you!
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-center mb-8">Crepe Shop Orders</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Driwich Orders</h1>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button>Manage Products</Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+            <SheetHeader>
+              <SheetTitle>Manage Products</SheetTitle>
+            </SheetHeader>
+            <ProductManager />
+          </SheetContent>
+        </Sheet>
+      </div>
       <div className="grid md:grid-cols-2 gap-8">
         <div>
           <h2 className="text-2xl font-semibold mb-4">New Order</h2>
