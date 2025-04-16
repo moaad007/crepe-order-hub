@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NewOrderForm } from "../components/NewOrderForm";
 import { OrderCard } from "../components/OrderCard";
@@ -59,12 +58,29 @@ Thank you!
 `;
 
     const printFrame = document.createElement('iframe');
-    printFrame.style.display = 'none';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
     document.body.appendChild(printFrame);
     
-    printFrame.contentDocument?.write(`
+    const printDocument = printFrame.contentWindow?.document;
+    if (!printDocument) {
+      document.body.removeChild(printFrame);
+      toast({
+        title: "Print error",
+        description: "Could not prepare print document",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    printDocument.write(`
       <html>
         <head>
+          <title>Print Order #${order.orderNumber}</title>
           <style>
             @page {
               margin: 0;
@@ -88,48 +104,37 @@ Thank you!
           <div class="ticket">
             <pre>${ticketContent}</pre>
           </div>
-          <script>
-            window.onload = function() {
-              // Use setTimeout to ensure content is loaded
-              setTimeout(function() {
-                // Access the print method directly
-                window.print();
-                // Close the print dialog automatically
-                setTimeout(function() {
-                  window.close();
-                }, 500);
-              }, 100);
-            };
-          </script>
         </body>
       </html>
     `);
     
-    printFrame.contentDocument?.close();
+    printDocument.close();
     
-    // Create a link to the iframe for WebKit browsers
-    const printWindow = printFrame.contentWindow;
-    if (printWindow) {
+    printFrame.onload = () => {
       try {
-        // Set print options to bypass dialog (this works in some browsers)
-        const printSettings = {
-          silent: true,
-          printBackground: true,
-          deviceWidth: '80mm'
-        };
+        printFrame.contentWindow?.focus();
         
-        // Try direct printing
-        // @ts-ignore - TypeScript doesn't recognize these print options
-        printWindow.print(printSettings);
-      } catch (e) {
-        // Fallback to regular print if silent print fails
-        printWindow.print();
+        setTimeout(() => {
+          try {
+            if (printFrame.contentWindow?.print) {
+              printFrame.contentWindow.print();
+            }
+            
+            setTimeout(() => {
+              if (document.body.contains(printFrame)) {
+                document.body.removeChild(printFrame);
+              }
+            }, 1000);
+          } catch (err) {
+            console.error("Print error:", err);
+            document.body.removeChild(printFrame);
+          }
+        }, 200);
+      } catch (err) {
+        console.error("Print focus error:", err);
+        document.body.removeChild(printFrame);
       }
-    }
-    
-    setTimeout(() => {
-      document.body.removeChild(printFrame);
-    }, 1000);
+    };
 
     toast({
       title: "Order Created",
