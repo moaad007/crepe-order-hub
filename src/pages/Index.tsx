@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { NewOrderForm } from "../components/NewOrderForm";
 import { OrderCard } from "../components/OrderCard";
@@ -87,13 +88,44 @@ Thank you!
           <div class="ticket">
             <pre>${ticketContent}</pre>
           </div>
+          <script>
+            window.onload = function() {
+              // Use setTimeout to ensure content is loaded
+              setTimeout(function() {
+                // Access the print method directly
+                window.print();
+                // Close the print dialog automatically
+                setTimeout(function() {
+                  window.close();
+                }, 500);
+              }, 100);
+            };
+          </script>
         </body>
       </html>
     `);
     
     printFrame.contentDocument?.close();
-    printFrame.contentWindow?.focus();
-    printFrame.contentWindow?.print();
+    
+    // Create a link to the iframe for WebKit browsers
+    const printWindow = printFrame.contentWindow;
+    if (printWindow) {
+      try {
+        // Set print options to bypass dialog (this works in some browsers)
+        const printSettings = {
+          silent: true,
+          printBackground: true,
+          deviceWidth: '80mm'
+        };
+        
+        // Try direct printing
+        // @ts-ignore - TypeScript doesn't recognize these print options
+        printWindow.print(printSettings);
+      } catch (e) {
+        // Fallback to regular print if silent print fails
+        printWindow.print();
+      }
+    }
     
     setTimeout(() => {
       document.body.removeChild(printFrame);
