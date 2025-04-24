@@ -1,21 +1,53 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
-import { menuItems, CrepeItem, updateMenuItems } from "../data/menu";
 import { toast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+}
 
 export function ProductManager() {
-  const [products, setProducts] = useState<CrepeItem[]>(menuItems);
-  const [editingProduct, setEditingProduct] = useState<CrepeItem | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
     category: "savory" as const,
   });
+  const [loading, setLoading] = useState(true);
 
-  const handleAddProduct = () => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  async function fetchProducts() {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch products",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       toast({
         title: "Error",
@@ -25,51 +57,93 @@ export function ProductManager() {
       return;
     }
 
-    const product: CrepeItem = {
-      id: (products.length + 1).toString(),
-      name: newProduct.name,
-      description: "",
-      price: parseFloat(newProduct.price),
-      category: newProduct.category,
-    };
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([
+          {
+            name: newProduct.name,
+            price: parseFloat(newProduct.price),
+            category: newProduct.category,
+          }
+        ])
+        .select()
+        .single();
 
-    const updatedProducts = [...products, product];
-    setProducts(updatedProducts);
-    updateMenuItems(updatedProducts); // Update the shared menu items
-    setNewProduct({ name: "", price: "", category: "savory" });
-    toast({
-      title: "Success",
-      description: "Product added successfully",
-    });
+      if (error) throw error;
+
+      setProducts([data, ...products]);
+      setNewProduct({ name: "", price: "", category: "savory" });
+      toast({
+        title: "Success",
+        description: "Product added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add product",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditProduct = (product: CrepeItem) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!editingProduct) return;
 
-    const updatedProducts = products.map((p) =>
-      p.id === editingProduct.id ? editingProduct : p
-    );
-    setProducts(updatedProducts);
-    updateMenuItems(updatedProducts); // Update the shared menu items
-    setEditingProduct(null);
-    toast({
-      title: "Success",
-      description: "Product updated successfully",
-    });
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          name: editingProduct.name,
+          price: editingProduct.price,
+          category: editingProduct.category,
+        })
+        .eq('id', editingProduct.id);
+
+      if (error) throw error;
+
+      setProducts(products.map((p) =>
+        p.id === editingProduct.id ? editingProduct : p
+      ));
+      setEditingProduct(null);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteProduct = (id: string) => {
-    const updatedProducts = products.filter((p) => p.id !== id);
-    setProducts(updatedProducts);
-    updateMenuItems(updatedProducts); // Update the shared menu items
-    toast({
-      title: "Success",
-      description: "Product deleted successfully",
-    });
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setProducts(products.filter((p) => p.id !== id));
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -100,7 +174,9 @@ export function ProductManager() {
         <h3 className="text-lg font-medium">Current Products</h3>
         <ScrollArea className="h-[300px] w-full border rounded-lg">
           <div className="space-y-4 p-4">
-            {products.map((product) =>
+            {loading ? (
+              <p>Loading products...</p>
+            ) : products.map((product) =>
               editingProduct?.id === product.id ? (
                 <div key={product.id} className="flex gap-2">
                   <Input
