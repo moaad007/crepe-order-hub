@@ -166,6 +166,16 @@ export function ProductManager() {
               setNewProduct({ ...newProduct, price: e.target.value })
             }
           />
+          <select
+            className="form-select block w-full p-2 border rounded-md"
+            value={newProduct.category}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, category: e.target.value as "savory" })
+            }
+          >
+            <option value="savory">Savory</option>
+            <option value="sweet">Sweet</option>
+          </select>
           <Button onClick={handleAddProduct}>Add Product</Button>
         </div>
       </div>
@@ -198,6 +208,19 @@ export function ProductManager() {
                       })
                     }
                   />
+                  <select
+                    className="form-select block w-full p-2 border rounded-md"
+                    value={editingProduct.category}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        category: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="savory">Savory</option>
+                    <option value="sweet">Sweet</option>
+                  </select>
                   <Button onClick={handleUpdateProduct}>Save</Button>
                   <Button
                     variant="ghost"
@@ -215,6 +238,9 @@ export function ProductManager() {
                     <p className="font-medium">{product.name}</p>
                     <p className="text-sm text-muted-foreground">
                       ${product.price.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {product.category}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -240,3 +266,4 @@ export function ProductManager() {
     </div>
   );
 }
+
