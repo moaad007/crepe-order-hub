@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { toast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface Product {
   id: string;
@@ -19,7 +20,7 @@ export function ProductManager() {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    category: "savory" as const,
+    category: "savory" as "savory" | "sweet",
   });
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +38,7 @@ export function ProductManager() {
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
+      console.error("Error fetching products:", error);
       toast({
         title: "Error",
         description: "Failed to fetch products",
@@ -58,27 +60,37 @@ export function ProductManager() {
     }
 
     try {
+      const priceValue = parseFloat(newProduct.price);
+      if (isNaN(priceValue)) {
+        throw new Error("Invalid price");
+      }
+
       const { data, error } = await supabase
         .from('products')
         .insert([
           {
             name: newProduct.name,
-            price: parseFloat(newProduct.price),
+            price: priceValue,
             category: newProduct.category,
           }
         ])
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
-      setProducts([data, ...products]);
-      setNewProduct({ name: "", price: "", category: "savory" });
-      toast({
-        title: "Success",
-        description: "Product added successfully",
-      });
+      if (data && data.length > 0) {
+        setProducts([data[0], ...products]);
+        setNewProduct({ name: "", price: "", category: "savory" });
+        toast({
+          title: "Success",
+          description: "Product added successfully",
+        });
+      }
     } catch (error) {
+      console.error("Error adding product:", error);
       toast({
         title: "Error",
         description: "Failed to add product",
@@ -115,6 +127,7 @@ export function ProductManager() {
         description: "Product updated successfully",
       });
     } catch (error) {
+      console.error("Error updating product:", error);
       toast({
         title: "Error",
         description: "Failed to update product",
@@ -138,6 +151,7 @@ export function ProductManager() {
         description: "Product deleted successfully",
       });
     } catch (error) {
+      console.error("Error deleting product:", error);
       toast({
         title: "Error",
         description: "Failed to delete product",
@@ -166,16 +180,20 @@ export function ProductManager() {
               setNewProduct({ ...newProduct, price: e.target.value })
             }
           />
-          <select
-            className="form-select block w-full p-2 border rounded-md"
+          <Select
             value={newProduct.category}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, category: e.target.value as "savory" })
+            onValueChange={(value) =>
+              setNewProduct({ ...newProduct, category: value as "savory" | "sweet" })
             }
           >
-            <option value="savory">Savory</option>
-            <option value="sweet">Sweet</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="savory">Savory</SelectItem>
+              <SelectItem value="sweet">Sweet</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={handleAddProduct}>Add Product</Button>
         </div>
       </div>
@@ -186,78 +204,86 @@ export function ProductManager() {
           <div className="space-y-4 p-4">
             {loading ? (
               <p>Loading products...</p>
-            ) : products.map((product) =>
-              editingProduct?.id === product.id ? (
-                <div key={product.id} className="flex gap-2">
-                  <Input
-                    value={editingProduct.name}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        name: e.target.value,
-                      })
-                    }
-                  />
-                  <Input
-                    type="number"
-                    value={editingProduct.price}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        price: parseFloat(e.target.value),
-                      })
-                    }
-                  />
-                  <select
-                    className="form-select block w-full p-2 border rounded-md"
-                    value={editingProduct.category}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        category: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="savory">Savory</option>
-                    <option value="sweet">Sweet</option>
-                  </select>
-                  <Button onClick={handleUpdateProduct}>Save</Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setEditingProduct(null)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      ${product.price.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {product.category}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleEditProduct(product)}
+            ) : products.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">No products found</p>
+            ) : (
+              products.map((product) =>
+                editingProduct?.id === product.id ? (
+                  <div key={product.id} className="flex flex-col md:flex-row gap-2">
+                    <Input
+                      value={editingProduct.name}
+                      onChange={(e) =>
+                        setEditingProduct({
+                          ...editingProduct,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      value={editingProduct.price}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setEditingProduct({
+                          ...editingProduct,
+                          price: isNaN(value) ? 0 : value,
+                        });
+                      }}
+                    />
+                    <Select
+                      value={editingProduct.category}
+                      onValueChange={(value) =>
+                        setEditingProduct({ ...editingProduct, category: value })
+                      }
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleDeleteProduct(product.id)}
-                    >
-                      Delete
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="savory">Savory</SelectItem>
+                        <SelectItem value="sweet">Sweet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex gap-2">
+                      <Button onClick={handleUpdateProduct}>Save</Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setEditingProduct(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    key={product.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4"
+                  >
+                    <div>
+                      <p className="font-medium">{product.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        ${product.price.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {product.category}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 self-end sm:self-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                )
               )
             )}
           </div>
@@ -266,4 +292,3 @@ export function ProductManager() {
     </div>
   );
 }
-
