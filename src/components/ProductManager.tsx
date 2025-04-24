@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { ScrollArea } from "./ui/scroll-area";
 import { menuItems, CrepeItem, updateMenuItems } from "../data/menu";
 import { toast } from "./ui/use-toast";
 
@@ -96,66 +98,68 @@ export function ProductManager() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Current Products</h3>
-        <div className="space-y-4">
-          {products.map((product) =>
-            editingProduct?.id === product.id ? (
-              <div key={product.id} className="flex gap-2">
-                <Input
-                  value={editingProduct.name}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      name: e.target.value,
-                    })
-                  }
-                />
-                <Input
-                  type="number"
-                  value={editingProduct.price}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      price: parseFloat(e.target.value),
-                    })
-                  }
-                />
-                <Button onClick={handleUpdateProduct}>Save</Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setEditingProduct(null)}
+        <ScrollArea className="h-[300px] w-full border rounded-lg">
+          <div className="space-y-4 p-4">
+            {products.map((product) =>
+              editingProduct?.id === product.id ? (
+                <div key={product.id} className="flex gap-2">
+                  <Input
+                    value={editingProduct.name}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                  <Input
+                    type="number"
+                    value={editingProduct.price}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        price: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                  <Button onClick={handleUpdateProduct}>Save</Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEditingProduct(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
                 >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <div
-                key={product.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div>
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    ${product.price.toFixed(2)}
-                  </p>
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      ${product.price.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleEditProduct(product)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleDeleteProduct(product.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            )
-          )}
-        </div>
+              )
+            )}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
