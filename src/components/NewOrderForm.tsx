@@ -1,10 +1,18 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { menuItems, CrepeItem } from "../data/menu";
 import { toast } from "./ui/use-toast";
 import { MenuItem } from "./MenuItem";
 import { SelectedItems } from "./SelectedItems";
+import { supabase } from "@/integrations/supabase/client";
+
+interface CrepeItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+}
 
 interface NewOrderFormProps {
   onSubmit: (order: {
@@ -15,6 +23,36 @@ interface NewOrderFormProps {
 
 export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
   const [selectedItems, setSelectedItems] = useState<CrepeItem[]>([]);
+  const [menuItems, setMenuItems] = useState<CrepeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('category', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setMenuItems(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load menu items",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddItem = (item: CrepeItem) => {
     setSelectedItems([...selectedItems, item]);
@@ -52,15 +90,21 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <h3 className="font-semibold">Menu Items</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {menuItems.map((item) => (
-                <MenuItem
-                  key={item.id}
-                  item={item}
-                  onAddItem={handleAddItem}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-4">Loading menu items...</div>
+            ) : menuItems.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">No menu items available</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {menuItems.map((item) => (
+                  <MenuItem
+                    key={item.id}
+                    item={item}
+                    onAddItem={handleAddItem}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           
           <SelectedItems
