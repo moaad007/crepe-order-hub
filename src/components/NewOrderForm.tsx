@@ -30,6 +30,29 @@ export function NewOrderForm({ onSubmit }: NewOrderFormProps) {
 
   useEffect(() => {
     fetchProducts();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('Real-time change:', payload);
+          // Refresh the products list when there's any change
+          fetchProducts();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchProducts = async () => {
