@@ -1,5 +1,12 @@
-import { CrepeItem } from "../data/menu";
+
 import { Button } from "./ui/button";
+
+interface CrepeItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+}
 
 interface SelectedItemsProps {
   items: CrepeItem[];

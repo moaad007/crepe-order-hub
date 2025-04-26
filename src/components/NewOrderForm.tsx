@@ -7,11 +7,13 @@ import { MenuItem } from "./MenuItem";
 import { SelectedItems } from "./SelectedItems";
 import { supabase } from "@/integrations/supabase/client";
 
+// Updated interface to match the database structure
 interface CrepeItem {
   id: string;
   name: string;
   price: number;
   category: string;
+  // We don't have description in the database table
 }
 
 interface NewOrderFormProps {
