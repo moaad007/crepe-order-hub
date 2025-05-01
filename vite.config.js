@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -20,3 +19,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
+
+export default {
+  extends: ["eslint:recommended"],
+  files: ["**/*.{js,jsx}"],
+  rules: {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+  },
+};
